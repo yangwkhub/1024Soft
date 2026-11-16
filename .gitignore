@@ -1,5 +1,10 @@
-# Object file
-*.o
-
-# Ada Library Information
-*.ali
+# 
+# node_modules/
+dist/
+.astro/
+.env
+.env.local
+.DS_Store
+*.log
+# 本地 HTTPS 自签证书（默认存系统临时目录；手动放进项目时也不入库）
+.cert/
