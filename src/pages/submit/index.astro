@@ -1,0 +1,47 @@
+---
+import DocPage from '../../components/DocPage.astro';
+import Icon from '../../components/Icon.astro';
+import { REPO_URL, href } from '../../lib/data';
+const issueUrl = `${REPO_URL}/issues/new?labels=submission&template=software-submission.yml`;
+const editUrl = `${REPO_URL}/new/main/content/software`;
+---
+<DocPage title="投稿软件" active="submit" path="submit/" showToc={false} showCurrentCrumb={false} showCrumbs={false} showHeading={false}>
+  <h2 id="criteria">收录标准</h2>
+  <ol>
+    <li>必须满足其一：<strong>开源</strong>（有可验证仓库）、<strong>完全免费且无功能限制</strong>、<strong>对个人或非商业用途免费</strong>（必须显式标注 <strong>个人免费</strong>）。</li>
+    <li>必须提供可验证的 <code>https://</code> 官方网站；下载链接需与官网同域或在白名单内（GitHub Releases、SourceForge 等）。</li>
+    <li><strong>免费增值</strong> 可以收录，但一句话卖点与详情页必须明确写出「有付费高级功能」。</li>
+    <li>每 180 天复核一次，超期会标记「待复核」。</li>
+  </ol>
+
+  <h2 id="reject">明确拒收</h2>
+  <ol>
+    <li>试用版、限时免费、需要破解 / 激活码 / 序列号的软件；</li>
+    <li>内置捆绑安装、强制推广组件、无法验证官网来源的工具；</li>
+    <li>已停止维护且存在已知高危漏洞的软件；</li>
+    <li>色情、赌博、侵权或规避监管类工具。</li>
+  </ol>
+
+  <h2 id="paths">两种投稿方式</h2>
+  <table>
+    <thead><tr><th>路径</th><th>适合</th><th>操作</th></tr></thead>
+    <tbody>
+      <tr><td>Issue 表单</td><td>普通用户，不想碰 Git</td><td>填一份结构化表单，维护者审核后转成 Markdown 并开 PR</td></tr>
+      <tr><td>直接提 PR</td><td>熟悉 Git 的贡献者</td><td>Fork → 新增 <code>content/software/&lt;slug&gt;.md</code> → CI 校验 → 合并即上线</td></tr>
+    </tbody>
+  </table>
+  <p style="margin:18px 0;display:flex;gap:10px;flex-wrap:wrap">
+    <a class="btn" href={issueUrl} target="_blank" rel="noopener noreferrer nofollow"><Icon name="edit" size={16} /> 填写投稿 Issue 表单</a>
+    <a class="btn btn-ghost" href={editUrl} target="_blank" rel="noopener noreferrer nofollow"><Icon name="github" size={16} /> 在 GitHub 新增 Markdown</a>
+    <a class="btn btn-ghost" href={href('contributing/')}>查看字段说明</a>
+  </p>
+  <p>维护者也可以直接在<a href={href('admin/')}>管理后台</a>的「软件条目」里新建条目，后台会自动创建分支、提交并开 PR，同样要经过 CI 校验。</p>
+
+  <h2 id="fields">需要哪些字段</h2>
+  <p>最少需要：名称、一句话卖点（≤60 字）、软件简介（10-200字）、官网、下载页、收费模式、是否开源、支持平台、分类、最后复核日期、风险等级；开源软件还需代码仓库与许可证，非开源软件这两项留空。以及一段不少于 30 字的 Markdown 正文。完整字段字典见<a href={href('contributing/')}>贡献指南</a>。</p>
+  <p>任何缺失必填字段、字典引用不存在、或下载域名不在白名单的 PR，都会让 Content CI 失败，并在 PR 上给出可定位到文件的错误提示。</p>
+
+  <h2 id="sla">审核与免责</h2>
+  <p>本项目由社区志愿维护，通常会在几天内处理，紧急举报会优先。审核清单包括：是否真免费、官网可达、开源许可可验证、是否捆绑、平台标注准确、图片版权与中文表述规范。</p>
+  <p>本站不托管、不修改、不分发任何软件，不对第三方软件的安全性作担保；软件版权归原作者所有。详见<a href={href('disclaimer/')}>免责与隐私</a>。</p>
+</DocPage>

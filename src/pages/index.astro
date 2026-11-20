@@ -1,0 +1,56 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SearchBox from '../components/SearchBox.astro';
+import SoftwareCard from '../components/SoftwareCard.astro';
+import Icon from '../components/Icon.astro';
+import { getSoftware, href, canonical } from '../lib/data';
+import { ui } from '../i18n/ui';
+
+const all = await getSoftware();
+const featured = all.filter((s) => s.featured).slice(0, 6);
+const latest = [...all].sort((a, b) => (b.released_at || '').localeCompare(a.released_at || '')).slice(0, 6);
+const hot = all.slice(0, 6);
+---
+<BaseLayout description={ui.siteSlogan} active="home" path=""
+  jsonLd={{ '@context': 'https://schema.org', '@type': 'WebSite', name: '1024Soft', url: canonical(''), potentialAction: { '@type': 'SearchAction', target: `${canonical('search/')}?q={search_term_string}`, 'query-input': 'required name=search_term_string' } }}>
+  <section class="hero">
+    <div class="container">
+      {ui.siteSlogan
+        ? <h1 class="hero-slogan">{ui.siteSlogan}</h1>
+        : <h1 class="sr-only">1024Soft</h1>}
+      <div class="hero-search"><SearchBox id="hero-search" /></div>
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="container">
+      <div class="section-head"><div><h2>{ui.labels.featured}</h2></div><a href={href('categories/')} style="display:inline-flex;align-items:center;gap:6px">软件目录 <Icon name="arrow" size={14} /></a></div>
+      <div class="card-grid">{featured.map((s) => <SoftwareCard item={s} />)}</div>
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="container">
+      <div class="section-head"><div><h2>{ui.labels.hot}</h2></div><a href={href('ranking/')} style="display:inline-flex;align-items:center;gap:6px">热门榜单 <Icon name="arrow" size={14} /></a></div>
+      <div class="card-grid">{hot.map((s, i) => <div style="position:relative">
+        <span style="position:absolute;top:-9px;left:-9px;z-index:2;background:var(--primary);color:#fff;width:26px;height:26px;border-radius:9px;display:grid;place-items:center;font-size:12px;font-weight:800;box-shadow:var(--shadow-sm)">{i + 1}</span>
+        <SoftwareCard item={s} />
+      </div>)}</div>
+    </div>
+  </section>
+
+  <section class="section tight">
+    <div class="container">
+      <div class="section-head"><div><h2>{ui.labels.latest}</h2></div><a href={href('changelog/')} style="display:inline-flex;align-items:center;gap:6px">更新记录 <Icon name="arrow" size={14} /></a></div>
+      <div class="card-grid">{latest.map((s) => <SoftwareCard item={s} />)}</div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* 首页所有软件卡片统一尺寸：网格所有行等高，取内容最满的一行（Bitwarden 等）为基准 */
+  .card-grid { grid-auto-rows: 1fr; }
+  /* 「本周热门」卡片外层有角标定位容器，让内部卡片随容器一起拉伸 */
+  .card-grid > div { display: flex; }
+  .card-grid > div > :global(.soft-card) { flex: 1 1 auto; width: 100%; }
+</style>

@@ -1,0 +1,30 @@
+---
+import Icon from './Icon.astro';
+import { href, REPO_URL } from '../lib/data';
+import { ui } from '../i18n/ui';
+const { active = '' } = Astro.props;
+const links = [
+  { key: 'home', label: ui.nav.home, to: '' },
+  { key: 'catalog', label: ui.nav.catalog, to: 'categories/' },
+  { key: 'ranking', label: ui.nav.ranking, to: 'ranking/' },
+  { key: 'submit', label: ui.nav.submit, to: 'submit/' },
+  { key: 'about', label: ui.nav.about, to: 'about/' }
+];
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href={href()} aria-label={`${ui.siteName} 首页`}>
+      <span class="brand-mark">1024</span>
+      <span>Soft</span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      {links.map((l) => <a href={href(l.to)} aria-current={active === l.key ? 'page' : undefined}>{l.label}</a>)}
+    </nav>
+    <div class="header-actions">
+      <a class="icon-btn header-search" href={href('search/')} aria-label="搜索软件"><Icon name="search" size={17} /></a>
+      <a class="icon-btn" href={REPO_URL} target="_blank" rel="noopener noreferrer nofollow" aria-label="GitHub 仓库"><Icon name="github" size={17} /></a>
+      <a class="btn btn-sm" href={href('submit/')}><Icon name="plus" size={15} /> 投稿</a>
+      <a class="icon-btn" href={href('admin/')} aria-label="管理后台" title="管理后台"><Icon name="settings" size={17} /></a>
+    </div>
+  </div>
+</header>

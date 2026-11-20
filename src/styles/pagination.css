@@ -1,0 +1,35 @@
+/* 全站统一分页：软件目录（客户端生成）与热门榜单（构建期生成）共用同一套标记与样式 */
+.pagination {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  justify-content: center; align-items: center;
+  margin-top: 30px;
+}
+.pagination[hidden] { display: none; }
+.pagination .pg {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 38px; height: 38px; padding: 0 13px;
+  border: 1px solid var(--border); border-radius: 9px;
+  background: var(--surface); color: var(--text-2);
+  font-size: 13px; font-weight: 600; line-height: 1;
+  text-decoration: none; white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(23, 26, 43, .04);
+  transition: color .16s, border-color .16s, background .16s, box-shadow .16s;
+}
+.pagination a.pg:hover {
+  color: var(--primary); border-color: var(--primary);
+  background: var(--primary-soft); box-shadow: 0 3px 10px rgba(0, 71, 171, .12);
+}
+.pagination a.pg:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.pagination .pg.current {
+  background: var(--primary); border-color: var(--primary); color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 71, 171, .22);
+}
+.pagination .pg.disabled { opacity: .45; cursor: not-allowed; }
+.pagination .pg.disabled:hover {
+  color: var(--text-2); border-color: var(--border);
+  background: var(--surface); box-shadow: none;
+}
+@media (max-width: 560px) {
+  .pagination { gap: 6px; }
+  .pagination .pg { min-width: 34px; height: 34px; padding: 0 10px; font-size: 12.5px; }
+}

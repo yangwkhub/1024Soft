@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { getSoftware, href } from '../../lib/data';
+export async function getStaticPaths() {
+  const all = await getSoftware();
+  return all.map((s) => ({ params: { slug: s.slug }, props: { item: s } }));
+}
+const { item: s } = Astro.props;
+const host = new URL(s.download_url).hostname;
+---
+<BaseLayout title={`即将前往 ${s.name} 官网`} description={`外链跳转确认：${s.name} 由 ${host} 提供下载。`} noindex={true} path={`go/${s.slug}/`}>
+  <div class="go-wrap">
+    <div class="go-card" data-go data-target={s.download_url}>
+      <div class="go-icon"><Icon name="external" size={28} /></div>
+      <h1>你即将离开 1024Soft</h1>
+      <p>本站不托管、不修改、不分发任何安装包。请确认目标地址是软件官方页面，并自行判断下载内容与安全性。</p>
+      <div class="go-target">
+        <strong>{s.name}</strong>
+        <span style="color:var(--primary)">{host}</span><br />
+        <small style="color:var(--muted);word-break:break-all">{s.download_url}</small>
+      </div>
+      <div class="go-progress"><i></i></div>
+      <p style="font-size:13px;margin-bottom:16px"><span data-countdown>3</span> 秒后自动前往；如不希望跳转，可点击下方取消。</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <a class="btn btn-lg" href={s.download_url} target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer"><Icon name="arrow" size={17} /> 立即前往</a>
+        <button class="btn btn-ghost btn-lg" type="button" data-cancel>停留在此页</button>
+        <a class="btn btn-ghost btn-lg" href={s.pageUrl}>返回详情</a>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:22px">所有外链均带 <code>rel="noopener noreferrer nofollow"</code> 与 <code>referrerpolicy="no-referrer"</code>。</p>
+    </div>
+  </div>
+</BaseLayout>
+<script>
+  const box = document.querySelector<HTMLElement>('[data-go]');
+  if (box) {
+    const target = box.dataset.target || '#';
+    const label = box.querySelector<HTMLElement>('[data-countdown]');
+    let left = 3;
+    const timer = window.setInterval(() => {
+      left -= 1;
+      if (label) label.textContent = String(Math.max(left, 0));
+      if (left <= 0) { window.clearInterval(timer); window.location.assign(target); }
+    }, 1000);
+    box.querySelector('[data-cancel]')?.addEventListener('click', () => {
+      window.clearInterval(timer);
+      const bar = box.querySelector<HTMLElement>('.go-progress i');
+      if (bar) { bar.style.animation = 'none'; bar.style.width = '0'; }
+      const p = box.querySelector('[data-countdown]')?.parentElement;
+      if (p) p.innerHTML = '已取消自动跳转，如需前往请点击「立即前往」。';
+    });
+  }
+</script>

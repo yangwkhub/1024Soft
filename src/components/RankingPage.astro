@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { PRICING, categoryName, href, formatDownloads, type Software } from '../lib/data';
+interface Props {
+  items: Software[];
+  page: number;
+  pages: number;
+  start: number;
+}
+const { items, page, pages, start } = Astro.props;
+const pageHref = (n: number) => href(n === 1 ? 'ranking/' : `ranking/${n}/`);
+---
+<BaseLayout title={page > 1 ? `热门榜单 · 第 ${page} 页` : '热门榜单'}
+  description="按下载量排序的免费与开源软件榜单。" active="ranking"
+  path={page === 1 ? 'ranking/' : `ranking/${page}/`}>
+  <div class="container" style="padding:32px 0 60px">
+    <div class="side-card" style="padding:8px 18px">
+      <table class="info-table ranking-table" style="font-size:14px">
+        <thead><tr>
+          <td style="width:44px">排名</td>
+          <td>软件</td>
+          <td class="rk-meta">收费模式</td>
+          <td class="rk-meta">分类</td>
+          <td class="rk-meta">下载量</td>
+        </tr></thead>
+        <tbody>
+          {items.map((s, i) => <tr>
+            <td style="width:44px"><span style={`display:grid;place-items:center;width:26px;height:26px;border-radius:8px;font-weight:800;background:${start + i < 3 ? 'var(--primary)' : 'var(--surface-2)'};color:${start + i < 3 ? '#fff' : 'var(--muted)'}`}>{start + i + 1}</span></td>
+            <td><a href={s.pageUrl}><strong>{s.name}</strong></a><br /><small style="color:var(--muted)">{s.tagline}</small></td>
+            <td class="rk-meta"><span class={`badge ${PRICING[s.pricing]?.tone || ''}`}>{PRICING[s.pricing]?.label || s.pricing}</span></td>
+            <td class="rk-meta" style="color:var(--muted);font-size:12.5px">{categoryName(s.categories[0] || '')}</td>
+            <td class="rk-meta" style="font-variant-numeric:tabular-nums" title={`${s.downloads.toLocaleString('zh-CN')} 次`}>{formatDownloads(s.downloads)}</td>
+          </tr>)}
+        </tbody>
+      </table>
+    </div>
+    <nav class="pagination" aria-label="榜单分页">
+      {page > 1
+        ? <a class="pg" href={pageHref(page - 1)} rel="prev" aria-label="上一页">上一页</a>
+        : <span class="pg disabled" aria-disabled="true">上一页</span>}
+      {Array.from({ length: pages }, (_, i) => i + 1).map((n) => n === page
+        ? <span class="pg current" aria-current="page">{n}</span>
+        : <a class="pg" href={pageHref(n)} aria-label={`第 ${n} 页`}>{n}</a>)}
+      {page < pages
+        ? <a class="pg" href={pageHref(page + 1)} rel="next" aria-label="下一页">下一页</a>
+        : <span class="pg disabled" aria-disabled="true">下一页</span>}
+    </nav>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  .ranking-table thead td { font-size: 12px; font-weight: 700; color: var(--muted); padding: 12px 0 10px; }
+  .ranking-table td.rk-meta { width: 116px; text-align: center; white-space: nowrap; }
+  @media (max-width: 640px) {
+    .ranking-table { table-layout: fixed; }
+    .ranking-table td.rk-meta { width: 19%; white-space: normal; }
+    .ranking-table td.rk-meta .badge { display: inline-block; max-width: 100%; white-space: normal; padding: 2px 5px; font-size: 11px; }
+  }
+</style>

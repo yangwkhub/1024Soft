@@ -1,0 +1,50 @@
+---
+import DocPage from '../../components/DocPage.astro';
+import { REPO_URL, href } from '../../lib/data';
+const fields = [
+  ['唯一标识', 'string', '是', '^[a-z0-9][a-z0-9-]{1,59}$，与文件名一致，发布后可改（改名同步重命名文件）'],
+  ['名称 / 一句话卖点', 'string', '是', '官方名称 ≤60 字 / 一句话卖点 ≤60 字'],
+  ['软件简介', 'string', '是', '10-200字，详情页简介'],
+  ['官网地址 / 下载地址', 'url', '是', 'https:// 开头；下载域名与官网同域或白名单'],
+  ['代码仓库地址', 'url', '仅开源填写', 'GitHub / GitLab / Codeberg 等可验证仓库；开源必填，非开源留空'],
+  ['许可证代码', 'enum', '仅开源填写', '取值来自 data/licenses.json；开源必填，非开源留空'],
+  ['收费模式', 'enum', '是', '完全免费 / 免费增值 / 个人免费 / 商业付费'],
+  ['是否开源', 'boolean', '是', '为 true 时必须有 repo_url 与 license_code；为 false 时两者留空'],
+  ['支持平台 / 分类', 'string[]', '是 / 是', '分别来自对应字典；分类必填且至多 1 个'],
+  ['最后复核日期', 'date', '是', 'ISO 日期，距当前 ≤180 天，否则标记待复核'],
+  ['首页精选 / 排序权重', 'boolean / int', '否', '首页精选标记 / 0–100 排序权重'],
+  ['风险等级', 'enum', '是', '低 / 中 / 高，中及以上显示风险提示'],
+  ['搜索优化字段', 'string', '否', 'SEO 标题 ≤60 字、描述 ≤155 字'],
+  ['正文内容', 'string', '是', '≥30 字，建议「编辑点评 + 适用场景」两段']
+];
+---
+<DocPage title="贡献指南" lead="新增一条软件、修改一个字段、修正一个失效链接 —— 全部通过纯文本与 Pull Request 完成。" active="catalog" path="contributing/"
+  showCrumbs={false} showToc={false} compactTitle>
+  <h2 id="quick">三步新增条目</h2>
+  <ol>
+    <li>在 <code>content/software/</code> 新建 <code>&lt;slug&gt;.md</code>，可以直接复制 <a href={`${REPO_URL}/blob/main/content/software/7zip.md`} target="_blank" rel="noopener noreferrer nofollow">7zip.md</a> 作为模板。</li>
+    <li>本地跑 <code>pnpm validate &amp;&amp; pnpm build &amp;&amp; pnpm preview</code>，确认字段、字典引用与外链都通过。</li>
+    <li>提交 PR。Content CI 通过后由 Maintainer 合并，GitHub Actions 会在 3 分钟内发布到线上。</li>
+  </ol>
+  <p>也可以不装环境：用投稿 <a href={href('submit/')}>Issue 表单</a>提交信息，或在<a href={href('admin/')}>管理后台</a>里填写表单，由维护者代为生成 Markdown 与 PR。</p>
+
+  <h2 id="fields">字段字典</h2>
+  <table>
+    <thead><tr><th>字段</th><th>类型</th><th>必填</th><th>约束</th></tr></thead>
+    <tbody>{fields.map((f) => <tr><td>{f[0]}</td><td>{f[1]}</td><td>{f[2]}</td><td>{f[3]}</td></tr>)}</tbody>
+  </table>
+  <p>构建期派生字段（不写入文件）：详情页地址、跳转确认页地址、时效状态、推荐评分、检索文档。</p>
+
+  <h2 id="dict">受控字典</h2>
+  <p>分类字典支持二级分类；平台字典、许可证字典结构相同。<strong>新增枚举必须先改字典再改条目</strong>，否则跨文件校验会失败。下载域名白名单控制可接受的官方发行域。</p>
+
+  <h2 id="ci">CI 会检查什么</h2>
+  <ul>
+    <li>Zod schema：字段类型、长度、枚举、URL 必须为 HTTPS、开源必须有仓库；</li>
+    <li>跨文件校验：文件名 = slug；分类 / 平台 / 许可证引用完整；下载域名白名单；复核日期 ≤180 天；</li>
+    <li>构建必须成功（<code>astro build</code>），失败时在 PR 上自动留言并给出可定位到文件的错误。</li>
+  </ul>
+
+  <h2 id="review">审核与保护</h2>
+  <p><code>CODEOWNERS</code> 保护 <code>content/**</code>、<code>data/**</code> 与 <code>.github/**</code>，要求至少 1 名维护者 approve；main 分支禁止直推且必须通过 Content CI。下架只需删除文件，Git 历史保留完整审计轨迹，误操作可随时 <code>git revert</code>。</p>
+</DocPage>

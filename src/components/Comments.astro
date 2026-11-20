@@ -1,0 +1,162 @@
+---
+import { giscus } from '../lib/comments/giscus';
+import { REPO_URL } from '../lib/data';
+import Icon from './Icon.astro';
+interface Props { slug: string; name: string; }
+const { slug, name } = Astro.props;
+const reportUrl = `${REPO_URL}/issues/new?labels=report&title=${encodeURIComponent(`[举报评论] ${name}`)}`;
+---
+<section class="comments-section" id="comments" aria-label="社区讨论" data-comments data-slug={slug} data-report-url={reportUrl}>
+  <div class="comments-head">
+    <h2>社区讨论 <span class="badge" data-comment-count aria-live="polite">…</span></h2>
+    {!giscus.configured && (
+      <div class="comment-sort" role="group" aria-label="评论排序">
+        <button type="button" class="active" data-sort="newest">最新</button>
+        <button type="button" data-sort="hot">最热</button>
+      </div>
+    )}
+  </div>
+  <p class="comments-desc">评论由用户发布，不代表本站观点。请遵守讨论规则：禁止广告、引流、破解信息与人身攻击。</p>
+
+  {giscus.configured ? (
+    <Fragment>
+      <p class="banner blue" style="display:flex"><Icon name="github" size={16} /> <span>使用 GitHub 账号参与讨论；评论存储在本仓库的 Discussions 中。</span></p>
+      <div class="giscus-frame">
+        <script is:inline src="https://giscus.app/client.js"
+          data-repo={giscus.repo} data-repo-id={giscus.repoId}
+          data-category={giscus.category} data-category-id={giscus.categoryId}
+          data-mapping={giscus.mapping} data-strict="1"
+          data-reactions-enabled="1" data-emit-metadata="0"
+          data-input-position="top" data-theme="preferred_color_scheme"
+          data-lang={giscus.lang} data-loading="lazy"
+          crossorigin="anonymous" async></script>
+      </div>
+      <noscript><p class="banner amber">评论区需要 JavaScript；也可以到<a href={`${REPO_URL}/discussions`} target="_blank" rel="noopener noreferrer nofollow"> GitHub Discussions </a>参与讨论。</p></noscript>
+    </Fragment>
+  ) : (
+    <Fragment>
+      <form class="comment-form" data-comment-form>
+        <label class="sr-only" for={`comment-input-${slug}`}>发表评论</label>
+        <textarea id={`comment-input-${slug}`} data-comment-input placeholder={`说说你使用 ${name} 的体验、补充纠错或报告链接失效…`} maxlength="2000" required></textarea>
+        <div class="row">
+          <span class="hint" data-comment-hint aria-live="polite"></span>
+          <button class="btn btn-sm" type="submit">发表评论</button>
+        </div>
+      </form>
+      <div data-comment-list aria-live="polite"></div>
+      <noscript><p class="banner amber">评论区需要 JavaScript；也可以到<a href={`${REPO_URL}/discussions`} target="_blank" rel="noopener noreferrer nofollow"> GitHub Discussions </a>参与讨论。</p></noscript>
+    </Fragment>
+  )}
+</section>
+
+{!giscus.configured && (
+<script>
+  import { localCommentRepository, allLocalComments, likeLocalComment } from '../lib/comments/local';
+
+  const root = document.querySelector<HTMLElement>('[data-comments]');
+  if (root) {
+    const slug = root.dataset.slug || '';
+    const reportUrl = root.dataset.reportUrl || '#';
+    const listEl = root.querySelector<HTMLElement>('[data-comment-list]');
+    const countEl = root.querySelector<HTMLElement>('[data-comment-count]');
+    const form = root.querySelector<HTMLFormElement>('[data-comment-form]');
+    const input = root.querySelector<HTMLTextAreaElement>('[data-comment-input]');
+    const hint = root.querySelector<HTMLElement>('[data-comment-hint]');
+    let sort: 'newest' | 'hot' = 'newest';
+    let replyTo: string | null = null;
+    const liked = new Set<string>();
+
+    const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] || c));
+    const ago = (iso: string) => {
+      const d = Math.max(0, (Date.now() - new Date(iso).getTime()) / 60000);
+      if (d < 60) return `${Math.floor(d)} 分钟前`;
+      if (d < 1440) return `${Math.floor(d / 60)} 小时前`;
+      return `${Math.floor(d / 1440)} 天前`;
+    };
+    const md = (s: string) => esc(s)
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br />');
+
+    const itemHtml = (c: any, child = false) => `
+      <div class="comment-item" ${child ? 'style="padding-left:34px"' : ''} data-id="${esc(c.id)}">
+        <div class="avatar" aria-hidden="true">${esc(String(c.author_name || 'U').slice(0, 1))}</div>
+        <div class="comment-body">
+          <div class="comment-meta"><strong>${esc(c.author_name)}</strong><span>${ago(c.created_at)}</span>
+            ${c.status === 'pending' ? '<span class="badge amber">待审核</span>' : ''}</div>
+          <p>${md(c.body_md)}</p>
+          <div class="comment-actions">
+            <button type="button" data-like="${esc(c.id)}" ${liked.has(c.id) ? 'disabled' : ''}>👍 ${c.like_count || 0}</button>
+            <button type="button" data-reply="${esc(c.id)}" data-name="${esc(c.author_name)}">回复</button>
+            <a href="${esc(reportUrl)}" target="_blank" rel="noopener noreferrer nofollow" style="font-size:12.5px;color:var(--muted)">举报</a>
+          </div>
+        </div>
+      </div>`;
+
+    async function render() {
+      if (!listEl) return;
+      const published = await localCommentRepository.list(slug, sort);
+      const mine = allLocalComments().filter((c) => c.software_slug === slug && c.status === 'pending');
+      const parents = published.filter((c) => !c.parent_id);
+      const childrenOf = (id: string) => published.filter((c) => c.parent_id === id);
+      const html = [
+        ...mine.map((c) => itemHtml(c)),
+        ...parents.map((c) => itemHtml(c) + childrenOf(c.id).map((r) => itemHtml(r, true)).join(''))
+      ].join('');
+      listEl.innerHTML = html || `<div class="empty-state" style="padding:34px 16px"><div class="emoji">💬</div><h3>还没有讨论</h3><p>来写第一条使用体验吧，评论会先进入审核队列。</p></div>`;
+      if (countEl) countEl.textContent = `${published.length} 条`;
+    }
+
+    root.querySelectorAll<HTMLButtonElement>('[data-sort]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        sort = (btn.dataset.sort as 'newest' | 'hot') || 'newest';
+        root.querySelectorAll('[data-sort]').forEach((b) => b.classList.toggle('active', b === btn));
+        render();
+      });
+    });
+
+    listEl?.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement).closest('button');
+      if (!btn) return;
+      if (btn.dataset.like) {
+        liked.add(btn.dataset.like);
+        const n = likeLocalComment(btn.dataset.like);
+        btn.textContent = `👍 ${n}`;
+        btn.setAttribute('disabled', 'true');
+      }
+      if (btn.dataset.reply && input) {
+        replyTo = btn.dataset.reply;
+        input.value = `@${btn.dataset.name} `;
+        input.focus();
+        if (hint) hint.textContent = `正在回复 @${btn.dataset.name}，点击发表将作为一层回复提交`;
+      }
+    });
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!input) return;
+      const body = input.value.trim();
+      if (body.length < 2 || body.length > 2000) { if (hint) hint.textContent = '评论长度需在 2–2000 字符之间'; return; }
+      // 反垃圾：外链/短链、重复内容、关键词、突发频率（PRD F12）
+      const spam = /(https?:\/\/|t\.cn|bit\.ly|【广告】|加微信|序列号|破解版)/i.test(body);
+      const recent = allLocalComments().filter((c) => Date.now() - new Date(c.created_at).getTime() < 60000);
+      if (recent.length >= 3) { if (hint) hint.textContent = '发言过于频繁，请稍后再试'; return; }
+      if (allLocalComments().some((c) => c.body_md === body)) { if (hint) hint.textContent = '请勿重复提交相同内容'; return; }
+      await localCommentRepository.create(slug, body, replyTo);
+      input.value = ''; replyTo = null;
+      if (hint) hint.textContent = spam
+        ? '已提交，命中外链/关键词规则，需维护者审核后才会公开'
+        : '已提交，等待维护者审核通过后公开（演示模式可在 /admin/ 审核）';
+      render();
+    });
+
+    // 懒加载：进入视口才渲染评论列表，不阻塞 LCP
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some((x) => x.isIntersecting)) { render(); io.disconnect(); }
+      }, { rootMargin: '240px' });
+      io.observe(root);
+    } else render();
+  }
+</script>
+)}

@@ -1,0 +1,31 @@
+---
+import '../../styles/global.css';
+import '../../styles/admin.css';
+// v1.0 方案 A：/admin 是随站点一起生成的静态 SPA，hash 路由，不依赖任何服务端。
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <!-- 后台独立 CSP：全站 HTTPS，禁止任何明文子资源 -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com; frame-src 'none'; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests" />
+  <meta name="referrer" content="no-referrer" />
+  <title>管理后台 - 1024Soft</title>
+  <meta name="description" content="1024Soft 维护者后台：投稿审核、内容管理、评论审核与审计日志。" />
+  <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+</head>
+<body class="admin-body">
+  <div id="admin-root">
+    <div class="login-wrap"><div class="login-card">
+      <div class="login-head"><span class="brand-mark login-mark">1024</span><span class="login-word">Soft</span></div><h1>正在加载…</h1>
+      <p class="lead">首次加载会读取构建期生成的开放数据快照。</p>
+    </div></div>
+  </div>
+  <noscript><div class="login-wrap"><div class="login-card"><h1>需要启用 JavaScript</h1><p class="lead">管理后台是纯前端 SPA，请启用 JavaScript 后再访问；也可以直接到 GitHub 仓库的 Issues / Pull Requests 完成审核。</p></div></div></noscript>
+  <script>
+    import '../../scripts/admin';
+  </script>
+</body>
+</html>

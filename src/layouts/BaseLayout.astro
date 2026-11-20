@@ -1,0 +1,63 @@
+---
+import '../styles/global.css';
+import '../styles/pagination.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { canonical, SITE_URL } from '../lib/data';
+import { ui } from '../i18n/ui';
+
+interface Props {
+  title?: string;
+  description?: string;
+  active?: string;
+  path?: string;
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  csp?: 'site' | 'admin';
+}
+const defaultTitle = ui.siteSlogan ? `${ui.siteName} · ${ui.siteSlogan}` : ui.siteName;
+const {
+  title = defaultTitle,
+  description = ui.siteDescription,
+  active = '', path = '', noindex = false, jsonLd, csp = 'site'
+} = Astro.props;
+
+// 前台严格策略；v1.0 评论区仅放行 giscus 域，后台使用独立 CSP（见 admin/index.astro）
+// upgrade-insecure-requests：全站 HTTPS 兜底，任何遗留的 http:// 子资源都会被浏览器升级为 https，
+// 杜绝混合内容（GitHub Pages 的 TLS 由 GitHub 终止，静态产物无法发送响应头）。
+const policies = {
+  site: "default-src 'self'; img-src 'self' data: https:; script-src 'self' https://giscus.app; style-src 'self' 'unsafe-inline'; connect-src 'self' https://giscus.app https://api.github.com; frame-src https://giscus.app; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
+  admin: "default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com; frame-src 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+};
+const pageTitle = title.includes('1024Soft') ? title : `${title} - 1024Soft`;
+const pageUrl = canonical(path);
+const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+---
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content={policies[csp]} />
+  <title>{pageTitle}</title>
+  {description && <meta name="description" content={description} />}
+  <link rel="canonical" href={pageUrl} />
+  <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+  <link rel="alternate" type="application/rss+xml" title="1024Soft 软件更新" href={canonical('rss.xml')} />
+  {noindex && <meta name="robots" content="noindex,nofollow" />}
+  <meta name="theme-color" content="#0047ab" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="1024Soft" />
+  <meta property="og:title" content={pageTitle} />
+  {description && <meta property="og:description" content={description} />}
+  <meta property="og:url" content={pageUrl} />
+  <meta name="twitter:card" content="summary" />
+  {ld.map((obj) => <script type="application/ld+json" is:inline set:html={JSON.stringify(obj)} />)}
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <Header active={active} />
+  <main id="main" data-pagefind-body><slot /></main>
+  <Footer />
+</body>
+</html>

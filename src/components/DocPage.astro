@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { href } from '../lib/data';
+interface Props {
+  title: string;
+  lead?: string;
+  active?: string;
+  path: string;
+  toc?: { id: string; label: string }[];
+  showToc?: boolean;
+  showCurrentCrumb?: boolean;
+  showCrumbs?: boolean;
+  showHeading?: boolean;
+  /** 主标题使用与正文 h2 相同的字号，用于需要弱化页面标题的文档页 */
+  compactTitle?: boolean;
+}
+const { title, lead = '', active = '', path, toc = [], showToc = true, showCurrentCrumb = true, showCrumbs = true, showHeading = true, compactTitle = false } = Astro.props;
+---
+<BaseLayout title={title} description={lead || undefined} active={active} path={path}>
+  <div class="container doc-layout" style={showToc ? undefined : 'grid-template-columns:1fr'}>
+    <article class="doc" id="top">
+      {showCrumbs && <nav class="crumbs" aria-label="面包屑"><a href={href()}>首页</a>{showCurrentCrumb && <Fragment><span>/</span><span>{title}</span></Fragment>}</nav>}
+      {showHeading && (compactTitle ? <h1 class="doc-title">{title}</h1> : <h1>{title}</h1>)}
+      {lead && <p class="lead">{lead}</p>}
+      <slot />
+    </article>
+    {showToc && <aside class="toc">
+      <h3>本页目录</h3>
+      <a href="#top">概览</a>
+      {toc.map((t) => <a href={`#${t.id}`}>{t.label}</a>)}
+      <a href={href('contributing/')}>贡献指南</a>
+      <a href={href('disclaimer/')}>免责与隐私</a>
+    </aside>}
+  </div>
+</BaseLayout>
+
+<style>
+  /* 与 .doc h2 的字号一致；仅 compactTitle 页面启用 */
+  .doc-title { font-size: 20px; letter-spacing: -.01em; margin: 0 0 8px; }
+</style>

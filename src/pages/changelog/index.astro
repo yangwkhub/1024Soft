@@ -1,0 +1,37 @@
+---
+import DocPage from '../../components/DocPage.astro';
+import { execSync } from 'node:child_process';
+import { getSoftware, categoryName, href } from '../../lib/data';
+
+const all = await getSoftware();
+const recent = [...all].sort((a, b) => (b.released_at || '').localeCompare(a.released_at || '')).slice(0, 24);
+let commits: { sha: string; date: string; subject: string }[] = [];
+try {
+  const raw = execSync('git log --pretty=format:"%h|%ad|%s" --date=short -25 -- content/ data/', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  commits = raw.split('\n').filter(Boolean).map((line) => {
+    const [sha, date, ...rest] = line.split('|');
+    return { sha, date, subject: rest.join('|') };
+  });
+} catch { /* 非 git 环境时回退到内容快照 */ }
+---
+<DocPage title="更新记录" lead="内容变更以 Git 提交为唯一事实源；本页在构建期读取 git log，并附最近收录 / 更新的软件快照。" path="changelog/"
+  showCrumbs={false} showToc={false} compactTitle>
+  <h2 id="commits">Git 提交记录</h2>
+  {commits.length ? (
+    <table><thead><tr><th>日期</th><th>提交</th><th>说明</th></tr></thead><tbody>
+      {commits.map((c) => <tr><td>{c.date}</td><td><code>{c.sha}</code></td><td>{c.subject}</td></tr>)}
+    </tbody></table>
+  ) : <blockquote>当前目录不是 Git 仓库（或本地预览未带提交历史），无法读取 <code>git log</code>。推送到 GitHub 后，本页会自动列出 <code>content/</code> 与 <code>data/</code> 的最近 25 次提交。</blockquote>}
+
+  <h2 id="items">最近收录与更新</h2>
+  <table><thead><tr><th>日期</th><th>软件</th><th>版本</th><th>分类</th><th>复核</th></tr></thead><tbody>
+    {recent.map((s) => <tr><td>{s.released_at || '—'}</td><td><a href={s.pageUrl}>{s.name}</a></td><td>{s.version || '—'}</td><td>{categoryName(s.categories[0] || '')}</td><td>{s.last_checked_at}</td></tr>)}
+  </tbody></table>
+
+  <h2 id="feed">订阅方式</h2>
+  <ul>
+    <li><a href={href('rss.xml')}>RSS 订阅</a>：按复核时间输出最近 30 条；</li>
+    <li><a href={href('data/software.json')}>开放数据 JSON</a>：机器可读的全量快照；</li>
+    <li>GitHub Watch 本仓库的 <code>content/</code> 目录变更，或订阅管理后台的审核队列。</li>
+  </ul>
+</DocPage>

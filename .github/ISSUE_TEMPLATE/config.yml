@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 贡献指南
+    url: https://github.com/OWNER/REPO/blob/main/CONTRIBUTING.md
+    about: 了解字段规范、收录标准与本地校验方式
+  - name: 站点讨论区
+    url: https://github.com/OWNER/REPO/discussions
+    about: 使用体验、软件推荐与开放讨论

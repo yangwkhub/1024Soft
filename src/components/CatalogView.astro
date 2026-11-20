@@ -1,0 +1,247 @@
+---
+import SoftwareCard from './SoftwareCard.astro';
+import CategoryNav from './CategoryNav.astro';
+import { href, type Software } from '../lib/data';
+interface Props {
+  items: Software[];
+  heading: string;
+  description?: string;
+  crumbs?: { label: string; to?: string }[];
+  activeCategory?: string;
+  showCurrentCrumb?: boolean;
+  showCrumbs?: boolean;
+  showHeading?: boolean;
+  alwaysShowPager?: boolean;
+}
+const {
+  items, heading, description = '', crumbs = [], activeCategory = '',
+  showCurrentCrumb = true, showCrumbs = true, showHeading = true, alwaysShowPager = false
+} = Astro.props;
+type Trail = { label: string; to?: string };
+const trail: Trail[] = [
+  { label: '首页', to: '' },
+  ...crumbs.map((c): Trail => ({ label: c.label, to: c.to })),
+  ...(showCurrentCrumb ? [{ label: heading }] : [])
+];
+const hasHead = showCrumbs || showHeading || !!description;
+---
+{hasHead && <div class="page-head">
+  <div class="container">
+    {showCrumbs && <nav class="crumbs" aria-label="面包屑">
+      {trail.map((t, i) => <Fragment>
+        {i > 0 && <span>/</span>}
+        {t.to === undefined ? <span>{t.label}</span> : <a href={href(t.to)}>{t.label}</a>}
+      </Fragment>)}
+    </nav>}
+    {showHeading && <h1>{heading}</h1>}
+    {description && <p>{description}</p>}
+  </div>
+</div>}
+<!-- 顶部工具栏跨整个容器宽度，保证下方左右两列同一起始线 -->
+<div class="container catalog-top">
+  <div class="toolbar">
+    <div class="sort-bar">
+      <div class="sort-select-wrap">
+        <select data-sort-select aria-label="排序方式" title="选择软件排序方式">
+          <option value="recommend">推荐优先</option>
+          <option value="updated">最近更新</option>
+          <option value="name">按名称</option>
+        </select>
+        <svg class="sort-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 7.5 10 12l4.5-4.5" /></svg>
+      </div>
+    </div>
+    <span class="result-count" data-result-count aria-live="polite">共 {items.length} 款软件</span>
+  </div>
+</div>
+<div class="container catalog-layout">
+  <aside class="cat-side-wrap"><CategoryNav active={activeCategory} /></aside>
+  <div class="catalog-main">
+    <div class="card-grid" data-card-grid>
+      {items.map((item) => <SoftwareCard item={item} />)}
+    </div>
+    <div class="empty-state" data-empty hidden><div class="emoji">🔍</div><h3>没有找到匹配的软件</h3><p>试试换一个分类，或者<a href={href('submit/')} style="color:var(--primary)">推荐一款软件</a>给我们。</p></div>
+    <nav class="pagination" data-pagination data-always-pager={alwaysShowPager ? '1' : undefined} aria-label="分页"></nav>
+  </div>
+</div>
+
+<style is:global>
+  /* 顶部工具栏跨整宽，下方左右两列从同一水平线开始 */
+  .catalog-top { padding-top: 28px; }
+  .catalog-top .toolbar { margin-bottom: 20px; }
+  .catalog-layout { padding-top: 0; }
+
+  /* 下拉式排序：原生 select 保证键盘、触屏与浏览器兼容性，仅保留右侧下拉箭头 */
+  .toolbar .sort-bar { display: flex; align-items: center; }
+  .toolbar .sort-select-wrap { position: relative; display: inline-flex; align-items: center; }
+  .toolbar .sort-select-wrap select {
+    appearance: none; -webkit-appearance: none;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 9px 34px 9px 14px; min-width: 138px;
+    font: inherit; font-size: 13px; font-weight: 600; color: var(--text);
+    cursor: pointer; box-shadow: 0 1px 3px rgba(23, 26, 43, .05);
+    transition: border-color .16s, color .16s, box-shadow .16s, background-color .16s;
+  }
+  .toolbar .sort-select-wrap select:hover {
+    color: var(--primary); border-color: var(--primary);
+    background: var(--surface); box-shadow: 0 3px 10px rgba(0, 71, 171, .1);
+  }
+  /* 点击 / 键盘聚焦均不显示外圈描边，仅保留悬停高亮 */
+  .toolbar .sort-select-wrap select:focus,
+  .toolbar .sort-select-wrap select:focus-visible { outline: 0; outline-offset: 0; }
+  .toolbar .sort-chevron {
+    position: absolute; right: 11px; width: 14px; height: 14px;
+    color: var(--muted); pointer-events: none; transition: color .16s;
+  }
+  .toolbar .sort-select-wrap:hover .sort-chevron { color: var(--primary); }
+  @media (max-width: 560px) {
+    .toolbar .sort-bar { flex: 1 1 100%; }
+    .toolbar .sort-select-wrap { flex: 1; }
+    .toolbar .sort-select-wrap select { flex: 1; }
+  }
+</style>
+
+<script>
+  // 排序 / 筛选 / 分页统一由 URL query 驱动，可分享、可前进后退。
+  const grid = document.querySelector<HTMLElement>('[data-card-grid]');
+  if (grid) {
+    const cards = Array.from(grid.querySelectorAll<HTMLElement>('.soft-card'));
+    const countEl = document.querySelector<HTMLElement>('[data-result-count]');
+    const emptyEl = document.querySelector<HTMLElement>('[data-empty]');
+    const pager = document.querySelector<HTMLElement>('[data-pagination]');
+    // 分类详情页条目少（不足一页）时也保留分页条，与软件目录的分页样式/交互完全一致
+    const alwaysPager = pager?.dataset.alwaysPager === '1';
+    const sortSelect = document.querySelector<HTMLSelectElement>('[data-sort-select]');
+    const PER_PAGE = 24;
+    const SORTS = ['recommend', 'updated', 'name'] as const;
+    type SortKey = typeof SORTS[number];
+    let totalPages = 1;
+
+    const isSort = (v: string | null): v is SortKey => !!v && (SORTS as readonly string[]).includes(v);
+
+    // 写地址栏：无参数时不留多余的 "?"；URL 未变化时既不 push 也不 replace，避免重复历史
+    const setQuery = (mutate: (p: URLSearchParams) => void, push: boolean): boolean => {
+      const url = new URL(location.href);
+      mutate(url.searchParams);
+      const qs = url.searchParams.toString();
+      const next = url.pathname + (qs ? '?' + qs : '') + url.hash;
+      const now = location.pathname + location.search + location.hash;
+      if (next === now) return false;
+      history[push ? 'pushState' : 'replaceState']({}, '', next);
+      return true;
+    };
+
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const pageUrl = (n: number) => {
+      const u = new URL(location.href);
+      if (n <= 1) u.searchParams.delete('page'); else u.searchParams.set('page', String(n));
+      const qs = u.searchParams.toString();
+      return esc(u.pathname + (qs ? '?' + qs : '') + u.hash);
+    };
+
+    const byName = (a: HTMLElement, b: HTMLElement) =>
+      (a.dataset.name || '').localeCompare(b.dataset.name || '', 'zh-CN');
+    // 所有条目的复核日期相同，按版本发布日期排序才有区分度
+    const byReleased = (a: HTMLElement, b: HTMLElement) =>
+      (b.dataset.released || '').localeCompare(a.dataset.released || '');
+    const byWeight = (a: HTMLElement, b: HTMLElement) =>
+      Number(b.dataset.weight || 0) - Number(a.dataset.weight || 0);
+    // 次级 / 三级比较键保证同值条目顺序稳定，不会在刷新间抖动
+    const compare = (sort: SortKey) => (a: HTMLElement, b: HTMLElement) => {
+      if (sort === 'name') return byName(a, b) || byWeight(a, b) || byReleased(a, b);
+      if (sort === 'updated') return byReleased(a, b) || byWeight(a, b) || byName(a, b);
+      return byWeight(a, b) || byName(a, b);
+    };
+
+    const apply = (normalize = false) => {
+      const params = new URLSearchParams(location.search);
+      const rawSort = params.get('sort');
+      const sort: SortKey = isSort(rawSort) ? rawSort : 'recommend';
+      const platform = (params.get('platform') || '').split(',').filter(Boolean);
+      const category = params.get('category') || '';
+      const license = params.get('license') || '';
+
+      const visible = cards.filter((c) => {
+        const cPlat = (c.dataset.platforms || '').split(',');
+        const cCats = (c.dataset.categories || '').split(',');
+        return (!platform.length || platform.some((x) => cPlat.includes(x)))
+          && (!category || cCats.includes(category))
+          && (!license || c.dataset.license === license);
+      });
+      visible.sort(compare(sort));
+
+      totalPages = Math.max(1, Math.ceil(visible.length / PER_PAGE));
+      // 非法或越界页码（负数、小数、超大值、非数字）统一钳制到 [1, totalPages]
+      const rawPage = Number(params.get('page'));
+      const page = Number.isFinite(rawPage) && rawPage >= 1
+        ? Math.min(Math.floor(rawPage), totalPages) : 1;
+      const pageItems = visible.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+      // 地址栏规范化：非法 sort 删除、越界 page 钳制、第 1 页省略参数，保证 UI 与 URL 一致
+      if (normalize) {
+        setQuery((p) => {
+          if (!isSort(p.get('sort'))) p.delete('sort');
+          if (page <= 1) p.delete('page'); else p.set('page', String(page));
+        }, false);
+      }
+
+      // 只显示当前页卡片，其余隐藏；隐藏卡片不参与 DOM 搬运
+      cards.forEach((c) => { c.style.display = 'none'; });
+      pageItems.forEach((c) => { grid.appendChild(c); c.style.display = ''; });
+
+      if (sortSelect) sortSelect.value = sort;
+      if (countEl) countEl.textContent = `共 ${visible.length} 款软件${totalPages > 1 ? ` · 第 ${page}/${totalPages} 页` : ''}`;
+      if (emptyEl) emptyEl.hidden = visible.length > 0;
+
+      if (pager) {
+        if (totalPages <= 1 && !alwaysPager) {
+          pager.innerHTML = '';
+          pager.hidden = true;
+        } else {
+          pager.hidden = false;
+          const prev = page > 1
+            ? `<a class="pg" href="${pageUrl(page - 1)}" data-page="${page - 1}" rel="prev" aria-label="上一页">上一页</a>`
+            : `<span class="pg disabled" aria-disabled="true">上一页</span>`;
+          const nums = Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => n === page
+            ? `<span class="pg current" aria-current="page">${n}</span>`
+            : `<a class="pg" href="${pageUrl(n)}" data-page="${n}" aria-label="第 ${n} 页">${n}</a>`).join('');
+          const next = page < totalPages
+            ? `<a class="pg" href="${pageUrl(page + 1)}" data-page="${page + 1}" rel="next" aria-label="下一页">下一页</a>`
+            : `<span class="pg disabled" aria-disabled="true">下一页</span>`;
+          pager.innerHTML = prev + nums + next;
+        }
+      }
+    };
+
+    sortSelect?.addEventListener('change', () => {
+      const key = sortSelect.value;
+      if (!isSort(key)) { apply(true); return; }
+      // 不再提前 return：即使选了与回退值相同的项，也要清掉 URL 里的非法参数
+      const changed = setQuery((p) => {
+        if (key === 'recommend') p.delete('sort'); else p.set('sort', key);
+        p.delete('page');
+      }, true);
+      apply(changed);
+      // 排序后列表顺序整体变化，立即回到顶部才能看到新的排序结果
+      // 全局 html{scroll-behavior:smooth} 会让默认 scrollTo 变动画，这里显式瞬时滚动
+      if (changed) window.scrollTo({ top: 0, behavior: 'instant' });
+    });
+
+    pager?.addEventListener('click', (e) => {
+      const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-page]');
+      if (!a) return;
+      e.preventDefault();
+      const n = Number(a.dataset.page);
+      if (!Number.isInteger(n) || n < 1 || n > totalPages) return;
+      // 当前页重复点击不新增历史，避免后退按钮需要连点多次
+      const changed = setQuery((p) => {
+        if (n <= 1) p.delete('page'); else p.set('page', String(n));
+      }, true);
+      if (!changed) return;
+      apply(true);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
+
+    window.addEventListener('popstate', () => apply(true));
+    apply(true);
+  }
+</script>

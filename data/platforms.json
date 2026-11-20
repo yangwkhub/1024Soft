@@ -1,0 +1,7 @@
+[
+  { "slug": "windows", "name": "Windows", "description": "Microsoft Windows 桌面", "sort_order": 10 },
+  { "slug": "macos", "name": "macOS", "description": "Apple macOS 桌面", "sort_order": 20 },
+  { "slug": "linux", "name": "Linux", "description": "GNU/Linux 各发行版", "sort_order": 30 },
+  { "slug": "android", "name": "Android", "description": "安卓移动端", "sort_order": 40 },
+  { "slug": "ios", "name": "iOS", "description": "iPhone / iPad", "sort_order": 50 }
+]

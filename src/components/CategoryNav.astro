@@ -1,0 +1,18 @@
+---
+import Icon from './Icon.astro';
+import { dict, getFacets, getSoftware, href } from '../lib/data';
+interface Props { active?: string; }
+const { active = '' } = Astro.props;
+const facets = await getFacets();
+const total = (await getSoftware()).length;
+---
+<nav class="cat-side" aria-label="分类导航">
+  <a class="cat-side-link" href={href('categories/')}
+    class:list={{ current: !active }} aria-current={!active ? 'page' : undefined}>
+    <Icon name="folder" size={15} /> <span>全部分类</span><span class="n">{total}</span>
+  </a>
+  {dict.categories.map((c) => <a class="cat-side-link" href={href(`categories/${c.slug}/`)}
+    class:list={{ current: active === c.slug }} aria-current={active === c.slug ? 'page' : undefined}>
+    <Icon name={c.icon} size={15} /> <span>{c.name}</span><span class="n">{facets.categories.get(c.slug) || 0}</span>
+  </a>)}
+</nav>

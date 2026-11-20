@@ -1,0 +1,51 @@
+---
+import { href, REPO_URL, SITE_URL } from '../lib/data';
+import { ui } from '../i18n/ui';
+---
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href={href()}><span class="brand-mark">1024</span><span>Soft</span></a>
+        <p class="footer-slogan">{ui.siteSlogan}</p>
+      </div>
+      <div>
+        <h4>发现软件</h4>
+        <a href={href('categories/')}>全部分类</a>
+        <a href={href('ranking/')}>热门榜单</a>
+      </div>
+      <div>
+        <h4>参与共建</h4>
+        <a href={href('submit/')}>投稿软件</a>
+        <a href={href('contributing/')}>贡献指南</a>
+        <a href={href('changelog/')}>更新记录</a>
+        <a href={`${REPO_URL}/issues/new/choose`} target="_blank" rel="noopener noreferrer nofollow">举报 / 纠错</a>
+      </div>
+      <div>
+        <h4>站点信息</h4>
+        <a href={href('about/')}>联系本站</a>
+        <a href={href('disclaimer/')}>免责与隐私</a>
+        <a href={href('rss.xml')}>RSS 订阅</a>
+        <a href={href('data/software.json')}>开放数据</a>
+        <a href={href('admin/')}>管理后台</a>
+      </div>
+    </div>
+    <div class="footer-disclaimer">{ui.footer}</div>
+    <div class="footer-bottom">
+      <span>© 2026 1024Soft · 代码 MIT · 内容 CC BY-SA 4.0</span>
+      <span>{SITE_URL.replace(/^https?:\/\//, '')} · 由 GitHub Pages 托管</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer-slogan {
+    margin: 14px 0 0;
+    padding: 0;
+    max-width: 250px;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.8;
+    color: var(--text-2);
+  }
+</style>

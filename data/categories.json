@@ -1,0 +1,10 @@
+[
+  { "slug": "file-management", "name": "文件管理", "description": "压缩、同步、检索与本地文件处理", "icon": "folder", "sort_order": 10 },
+  { "slug": "office", "name": "办公效率", "description": "文档、笔记、PDF 与知识管理", "icon": "document", "sort_order": 20 },
+  { "slug": "dev-tools", "name": "开发工具", "description": "编辑器、终端、数据库与调试", "icon": "code", "sort_order": 30 },
+  { "slug": "graphics", "name": "图像设计", "description": "位图、矢量、三维与截图", "icon": "palette", "sort_order": 40 },
+  { "slug": "media", "name": "影音娱乐", "description": "播放、录制、剪辑与格式转换", "icon": "play", "sort_order": 50 },
+  { "slug": "security", "name": "安全隐私", "description": "密码管理、隐私与数据保护", "icon": "shield", "sort_order": 60 },
+  { "slug": "network", "name": "远程托管", "description": "下载、远程、同步与自建服务", "icon": "globe", "sort_order": 70 },
+  { "slug": "system", "name": "系统工具", "description": "系统增强、清理与效率小工具", "icon": "settings", "sort_order": 80 }
+]

@@ -1,0 +1,39 @@
+---
+import DocPage from '../../components/DocPage.astro';
+import { REPO_URL, href } from '../../lib/data';
+const reportUrl = `${REPO_URL}/issues/new?labels=report`;
+---
+<DocPage title="免责声明与隐私" lead="本站只提供信息索引，不托管软件；评论区由 GitHub Discussions 提供，后台凭证只存在维护者本机浏览器。" path="disclaimer/"
+  showCrumbs={false} showToc={false} compactTitle>
+  <h2 id="disclaim">免责声明</h2>
+  <p>本站<strong>不托管、不修改、不分发</strong>任何软件安装包，不对第三方软件的功能、安全性、可用性或适用性作任何明示或暗示的担保。软件版权、商标与相关权利归原作者或权利人所有，本站仅作识别性引用。</p>
+  <p>条目信息由社区贡献并人工复核，可能滞后于官方更新。示例种子数据中的版本号与发布日期仅用于展示字段结构，正式使用时请以软件官网为准。因使用或无法使用本站链接到的第三方软件而产生的任何损失，本站不承担责任。</p>
+
+  <h2 id="download">下载与外链</h2>
+  <ul>
+    <li>所有下载都先经过 <code>/go/&lt;slug&gt;/</code> 跳转确认页，明确展示目标域名后再前往；</li>
+    <li>所有外链带 <code>rel="noopener noreferrer nofollow"</code> 与 <code>referrerpolicy="no-referrer"</code>，不向官方站点传递来源；</li>
+    <li>下载链接必须与官网同域，或位于 <code>data/allowed-download-hosts.json</code> 白名单内，由 CI 强制校验；</li>
+    <li>标注为 <code>medium</code> / <code>high</code> 风险的条目会显示提示条，请留意安装向导中的可选组件与授权范围。</li>
+  </ul>
+
+  <h2 id="privacy">隐私与数据</h2>
+  <ul>
+    <li>本站<strong>不设置账号体系、不写本站 Cookie、不埋第三方统计脚本、不收集 IP 明文</strong>，也不做用户画像或行为追踪；</li>
+    <li>搜索在本地浏览器内完成，关键词不会上传到任何服务器；筛选状态只写在当前 URL 的 query 中；</li>
+    <li><strong>评论区由 GitHub Discussions / Giscus 提供</strong>：使用 GitHub 账号登录、发表与接收通知时，相关数据由 GitHub 按其隐私政策处理，本站只加载一个 iframe，不读取评论者邮箱或身份信息；</li>
+    <li>未配置 Giscus 时站点进入「本地演示模式」，评论只保存在当前浏览器的 localStorage，不会上传；</li>
+    <li><strong>管理后台</strong>使用维护者自己的 fine-grained PAT，仅存于 <code>sessionStorage</code>（关闭标签即失效），不写入仓库、不进 <code>PUBLIC_</code> 变量、不经过本站服务器、不出现在日志与 URL 中；</li>
+    <li>将来若启用自建 API（方案 B），也只存加盐哈希且 30 天滚动删除，届时会同步更新本页。</li>
+  </ul>
+
+  <h2 id="ugc">评论规则（UGC）</h2>
+  <p>评论为用户观点，不代表本站立场。默认<strong>先审后发</strong>；含外链 / 短链、与近期内容重复、命中关键词表或 1 分钟内连发 3 条以上的评论会强制进入审核队列。明确禁止人身攻击、广告引流、破解 / 序列号、与软件无关的内容。</p>
+  <p>评论不生成独立索引页、不参与站点 SEO；违规内容采取隐藏而非物理抹除，以便追溯。举报与侵权评论通常在 24–72 小时内处理。</p>
+
+  <h2 id="report">举报与侵权下架</h2>
+  <p>权利人如认为某条目或评论侵害其合法权益，请<a href={reportUrl} target="_blank" rel="noopener noreferrer nofollow">提交带 <code>report</code> 标签的 Issue</a>，说明具体链接、权属证明与诉求。我们会在核实后先临时下架，再作最终处理；处理记录保留在 Issue 与 Git 历史中。</p>
+
+  <h2 id="license">许可</h2>
+  <p>站点代码采用 <a href={`${REPO_URL}/blob/main/LICENSE`} target="_blank" rel="noopener noreferrer nofollow">MIT</a>，内容采用 <a href={`${REPO_URL}/blob/main/CONTENT_LICENSE`} target="_blank" rel="noopener noreferrer nofollow">CC BY-SA 4.0</a>。开放数据可在 <a href={href('data/software.json')}>/data/software.json</a> 获取，转载请保留署名与相同方式共享。</p>
+</DocPage>

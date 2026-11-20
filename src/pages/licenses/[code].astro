@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CatalogView from '../../components/CatalogView.astro';
+import { getSoftware, dict, licenseName } from '../../lib/data';
+export async function getStaticPaths() {
+  const all = await getSoftware();
+  return dict.licenses.map((l) => ({
+    params: { code: l.slug },
+    props: { items: all.filter((s) => s.license_code === l.slug), name: l.name, description: l.description }
+  }));
+}
+const { code } = Astro.params;
+const { items, name, description } = Astro.props;
+---
+<BaseLayout title={`${name} 许可的免费软件`} description={`采用 ${name} 许可的免费软件共 ${items.length} 款。${description}`} active="catalog" path={`licenses/${code}/`}>
+  <CatalogView items={items} heading={`${name} 许可`} description={`采用 ${name} 许可的免费软件共 ${items.length} 款。${description}`} crumbs={[{ label: '分类', to: 'categories/' }]} />
+</BaseLayout>

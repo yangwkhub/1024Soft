@@ -1,0 +1,11 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CatalogView from '../../components/CatalogView.astro';
+import { getSoftware, canonical } from '../../lib/data';
+const all = await getSoftware();
+---
+<BaseLayout title="软件目录" description="按平台或分类查看本站收录的免费与开源软件。" active="catalog" path="categories/"
+  jsonLd={{ '@context': 'https://schema.org', '@type': 'CollectionPage', name: '软件目录 - 1024Soft', url: canonical('categories/'), numberOfItems: all.length }}>
+  <CatalogView items={all} heading="软件目录"
+    activeCategory="" showCurrentCrumb={false} showCrumbs={false} showHeading={false} />
+</BaseLayout>

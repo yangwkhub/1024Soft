@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CatalogView from '../../components/CatalogView.astro';
+import { getSoftware, dict, platformName } from '../../lib/data';
+export async function getStaticPaths() {
+  const all = await getSoftware();
+  return dict.platforms.map((p) => ({
+    params: { slug: p.slug },
+    props: { items: all.filter((s) => s.platforms.includes(p.slug)), name: p.name, description: p.description }
+  }));
+}
+const { slug } = Astro.params;
+const { items, name, description } = Astro.props;
+---
+<BaseLayout title={`${name} 免费软件`} description={`支持 ${name} 的免费 / 开源软件共 ${items.length} 款。${description}`} active="catalog" path={`platforms/${slug}/`}>
+  <CatalogView items={items} heading={`${name} 软件`} description={`支持 ${name} 的免费 / 开源软件共 ${items.length} 款。${description}`} crumbs={[{ label: '软件目录', to: 'categories/' }]} />
+</BaseLayout>

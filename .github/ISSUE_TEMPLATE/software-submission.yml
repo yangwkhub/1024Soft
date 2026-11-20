@@ -1,0 +1,64 @@
+name: 投稿一款免费软件
+description: 推荐真正免费 / 开源的软件，维护者会按收录标准审核
+title: '[投稿] '
+labels: ['submission']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢参与共建！提交前请先搜索一下是否已收录。
+        本站只收录**真正免费**的软件：不接受限时试用、需要破解、含强制捆绑安装、下载页含大量广告跳转的工具。
+  - type: input
+    id: name
+    attributes: { label: 软件名称, placeholder: 例如 7-Zip }
+    validations: { required: true }
+  - type: input
+    id: homepage
+    attributes: { label: 官方网站（HTTPS）, placeholder: https://www.7-zip.org/ }
+    validations: { required: true }
+  - type: input
+    id: download
+    attributes: { label: 官方下载页（HTTPS） }
+    validations: { required: true }
+  - type: input
+    id: repo
+    attributes: { label: 代码仓库（开源软件必填）, placeholder: https://github.com/ip7z/7zip }
+  - type: dropdown
+    id: pricing
+    attributes:
+      label: 收费模式
+      options: [完全免费, 免费增值（免费部分可独立使用）, 仅个人免费]
+    validations: { required: true }
+  - type: dropdown
+    id: license
+    attributes:
+      label: 许可证（开源软件必填，非开源选「不适用」）
+      options: [MIT, GPL-2.0, GPL-3.0, LGPL-2.1, LGPL-3.0, Apache-2.0, MPL-2.0, AGPL-3.0, BSD-3-Clause, CC0-1.0, 其他 / 不清楚, 不适用（非开源）]
+    validations: { required: true }
+  - type: checkboxes
+    id: platforms
+    attributes:
+      label: 支持平台
+      options:
+        - { label: Windows }
+        - { label: macOS }
+        - { label: Linux }
+        - { label: Android }
+        - { label: iOS }
+  - type: input
+    id: category
+    attributes: { label: 建议分类（至多 1 项）, placeholder: 例如 文件管理 }
+    validations: { required: true }
+  - type: textarea
+    id: why
+    attributes:
+      label: 推荐理由（60 字以上）
+      description: 说明它解决了什么问题、与其他同类相比的优势、是否真的无广告无捆绑
+    validations: { required: true }
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 确认
+      options:
+        - label: 我确认该软件可免费使用，下载链接指向官方来源，且我未从推荐中获得报酬
+          required: true

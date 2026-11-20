@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+<BaseLayout title="联系本站" description="加入 1024Soft 开源交流 QQ 群，与用户和维护者共同交流、反馈建议。" active="about" path="about/">
+  <div class="container doc-layout" style="grid-template-columns:1fr">
+    <article class="doc about-doc" id="top">
+      <h2 id="intro">网站简介</h2>
+      <p><strong>1024Soft</strong>网站来自于开发者的某天一闪而过的想法，我们能不能把一些免费、好用、开源的软件聚合在一起，方便需要的人们查找和下载，也许能帮助到一些人呢。因此，基于开发者的奇思妙想，<strong>1024Soft</strong>诞生了，开发者期待网站能够一直存活下去，收录的软件越来越多，有越来越多的人加入投稿共建，免费、好用、开源既是网站的口号，也是未来的长期愿景。</p>
+
+      <h2 id="contact">联系本站</h2>
+      <p>为了方便大家共同交流和反馈建议，用户和维护者可以直接加入1024Soft开源交流QQ群：1132949100。</p>
+
+      <h2 id="download">下载与责任</h2>
+      <p>本站不保存也不分发任何安装包，所有下载都会跳转到软件的官方地址。软件版权归原作者所有，使用第三方软件时请自行判断风险。</p>
+
+      <h2 id="join">参与共建</h2>
+      <p>任何人都可以推荐软件、指出错误或者补充信息。内容修订会保留公开记录，用户也可以在评论区提出建议。</p>
+    </article>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  .about-doc > h2:first-of-type { margin-top: 0; }
+  .about-doc p strong { font-weight: 700; font-size: inherit; }
+</style>

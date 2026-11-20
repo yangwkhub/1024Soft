@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CatalogView from '../../components/CatalogView.astro';
+import { getSoftware, dict } from '../../lib/data';
+
+export async function getStaticPaths() {
+  const all = await getSoftware();
+  return dict.categories.map((c) => ({
+    params: { slug: c.slug },
+    props: { items: all.filter((s) => s.categories.includes(c.slug)), name: c.name, blurb: c.description }
+  }));
+}
+const { slug } = Astro.params;
+const { items, name, blurb } = Astro.props;
+---
+<BaseLayout title={`${name}软件`} description={blurb} active="catalog" path={`categories/${slug}/`}
+  jsonLd={{ '@context': 'https://schema.org', '@type': 'CollectionPage', name: `${name}软件 - 1024Soft`, numberOfItems: items.length }}>
+  <CatalogView items={items} heading={name}
+    activeCategory={slug}
+    showCurrentCrumb={false} showCrumbs={false} showHeading={false} alwaysShowPager />
+</BaseLayout>

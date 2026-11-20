@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 firsthub
+Copyright (c) 2026 1024Soft contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+说明：本许可只覆盖本仓库中的**代码与站点实现**。
+`content/software/*.md` 中的软件介绍文字适用 CC BY-SA 4.0（见 CONTENT_LICENSE）。
+所收录的第三方软件版权归各自作者所有，本站不分发其安装包。

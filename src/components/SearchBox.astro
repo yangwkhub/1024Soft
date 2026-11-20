@@ -1,0 +1,24 @@
+---
+import Icon from './Icon.astro';
+import { href } from '../lib/data';
+import { ui } from '../i18n/ui';
+interface Props { value?: string; id?: string; large?: boolean; placeholder?: string; }
+const { value = '', id = 'site-search', large = false, placeholder = ui.searchPlaceholder } = Astro.props;
+---
+<form class="search-box" role="search" action={href('search/')} method="get" data-search-form>
+  <Icon name="search" size={19} />
+  <label class="sr-only" for={id}>搜索软件</label>
+  <input id={id} type="search" name="q" value={value} placeholder={placeholder} autocomplete="off" data-search-input />
+  <kbd>/</kbd>
+  <button class="btn btn-sm" type="submit">搜索</button>
+</form>
+<script>
+  // `/` 聚焦搜索框，Esc 失焦；表单走站内 GET，不向外部提交
+  document.querySelectorAll<HTMLInputElement>('[data-search-input]').forEach((input) => {
+    document.addEventListener('keydown', (e) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') { e.preventDefault(); input.focus(); }
+      if (e.key === 'Escape' && document.activeElement === input) input.blur();
+    });
+  });
+</script>

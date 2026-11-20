@@ -1,0 +1,54 @@
+name: Content CI
+
+on:
+  pull_request:
+    paths:
+      - 'content/**'
+      - 'data/**'
+      - 'src/**'
+      - 'public/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'astro.config.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL || format('https://{0}.github.io', github.repository_owner) }}
+      PUBLIC_BASE_PATH: ${{ vars.PUBLIC_BASE_PATH || format('/{0}', github.event.repository.name) }}
+      PUBLIC_REPO_URL: ${{ vars.PUBLIC_REPO_URL || format('{0}/{1}', github.server_url, github.repository) }}
+      PUBLIC_REPO_OWNER: ${{ vars.PUBLIC_REPO_OWNER || github.repository_owner }}
+      PUBLIC_REPO_NAME: ${{ vars.PUBLIC_REPO_NAME || github.event.repository.name }}
+      PUBLIC_GISCUS_REPO: ${{ vars.PUBLIC_GISCUS_REPO }}
+      PUBLIC_GISCUS_REPO_ID: ${{ vars.PUBLIC_GISCUS_REPO_ID }}
+      PUBLIC_GISCUS_CATEGORY_ID: ${{ vars.PUBLIC_GISCUS_CATEGORY_ID }}
+      PUBLIC_GISCUS_MAPPING: ${{ vars.PUBLIC_GISCUS_MAPPING || 'pathname' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Zod-like cross-file validation
+        run: npm run validate
+      - name: Full static build (catches broken pages / bad links)
+        run: npx astro build
+      # 全站 HTTPS：PR 阶段就拦住任何明文站点 URL 或产物中的 http:// 链接
+      - name: Verify HTTPS-only output
+        run: |
+          case "$PUBLIC_SITE_URL" in
+            https://*) echo "站点 URL 已使用 HTTPS：$PUBLIC_SITE_URL" ;;
+            *) echo "::error::PUBLIC_SITE_URL 必须以 https:// 开头（当前：$PUBLIC_SITE_URL）"; exit 1 ;;
+          esac
+          npm run check:https
+      - name: Report
+        if: always()
+        run: echo "内容校验与构建结果见上方日志；任一失败都会阻止合并。" >> "$GITHUB_STEP_SUMMARY"

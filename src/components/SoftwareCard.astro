@@ -1,0 +1,31 @@
+---
+import Icon from './Icon.astro';
+import { PRICING, licenseName, platformName, href } from '../lib/data';
+import type { Software } from '../lib/data';
+interface Props { item: Software; compact?: boolean; }
+const { item: s, compact = false } = Astro.props;
+const pricing = PRICING[s.pricing] || { label: s.pricing, tone: '' };
+const logoClass = ['', 's1', 's2', 's3', 's4', 's5'][s.slug.length % 6];
+const initial = s.name.replace(/[^A-Za-z0-9\u4e00-\u9fff]/g, '').slice(0, 1).toUpperCase();
+const visiblePlatforms = s.platforms.slice(0, 3);
+---
+<article class="soft-card" data-platforms={s.platforms.join(',')} data-categories={s.categories.join(',')} data-pricing={s.pricing} data-license={s.license_code || ''} data-weight={s.weight} data-updated={s.last_checked_at} data-released={s.released_at} data-name={s.name}>
+  <div class="soft-top">
+    <div class={`soft-logo ${logoClass}`} aria-hidden="true">{initial}</div>
+    <div style="min-width:0">
+      <h3 class="soft-title"><a href={s.pageUrl}>{s.name}</a></h3>
+      <p class="soft-tagline">{s.tagline}</p>
+    </div>
+  </div>
+  {!compact && <p style="font-size:12.8px;color:var(--muted);line-height:1.65">{s.description.slice(0, 74)}{s.description.length > 74 ? '…' : ''}</p>}
+  <div class="soft-meta">
+    <span class={`badge ${pricing.tone}`}>{pricing.label}</span>
+    {s.license_code && <span class="badge plain">{licenseName(s.license_code)}</span>}
+    {s.is_open_source && <span class="badge teal">开源</span>}
+    {s.freshness === 'stale' && <span class="badge amber">待复核</span>}
+  </div>
+  <div class="soft-foot">
+    <span class="soft-platforms"><Icon name="monitor" size={14} /> {visiblePlatforms.map(platformName).join(' · ')}{s.platforms.length > 3 ? ` +${s.platforms.length - 3}` : ''}</span>
+    <span class="arrow" aria-hidden="true">→</span>
+  </div>
+</article>

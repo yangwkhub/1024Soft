@@ -1,0 +1,20 @@
+---
+import RankingPage from '../../components/RankingPage.astro';
+import { getRanking, RANKING_PER_PAGE } from '../../lib/data';
+
+// 构建期生成 /ranking/2/、/ranking/3/ …，翻页是真实静态链接，不依赖客户端脚本
+export async function getStaticPaths() {
+  const all = await getRanking();
+  const pages = Math.max(1, Math.ceil(all.length / RANKING_PER_PAGE));
+  return Array.from({ length: Math.max(0, pages - 1) }, (_, i) => ({
+    params: { page: String(i + 2) },
+    props: { page: i + 2, pages }
+  }));
+}
+
+const { page, pages } = Astro.props;
+const all = await getRanking();
+const start = (page - 1) * RANKING_PER_PAGE;
+const items = all.slice(start, start + RANKING_PER_PAGE);
+---
+<RankingPage items={items} page={page} pages={pages} start={start} />

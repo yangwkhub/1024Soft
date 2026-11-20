@@ -1,0 +1,13 @@
+[
+  { "slug": "MIT", "name": "MIT", "description": "宽松开源许可", "sort_order": 10 },
+  { "slug": "GPL-2.0", "name": "GPL-2.0", "description": "GNU GPL 第 2 版", "sort_order": 20 },
+  { "slug": "GPL-3.0", "name": "GPL-3.0", "description": "GNU GPL 第 3 版", "sort_order": 30 },
+  { "slug": "LGPL-2.1", "name": "LGPL-2.1", "description": "GNU 宽通用公共许可 2.1", "sort_order": 40 },
+  { "slug": "LGPL-3.0", "name": "LGPL-3.0", "description": "GNU 宽通用公共许可 3.0", "sort_order": 50 },
+  { "slug": "Apache-2.0", "name": "Apache-2.0", "description": "Apache 许可证 2.0", "sort_order": 60 },
+  { "slug": "MPL-2.0", "name": "MPL-2.0", "description": "Mozilla 公共许可 2.0", "sort_order": 70 },
+  { "slug": "AGPL-3.0", "name": "AGPL-3.0", "description": "GNU Affero GPL 第 3 版", "sort_order": 80 },
+  { "slug": "BSD-3-Clause", "name": "BSD-3-Clause", "description": "BSD 三条款许可", "sort_order": 90 },
+  { "slug": "CC0-1.0", "name": "CC0-1.0", "description": "公有领域贡献", "sort_order": 100 },
+  { "slug": "custom", "name": "其他许可", "description": "自定义或多重许可", "sort_order": 110 }
+]

@@ -1,0 +1,8 @@
+---
+import RankingPage from '../../components/RankingPage.astro';
+import { getRanking, RANKING_PER_PAGE } from '../../lib/data';
+const all = await getRanking();
+const pages = Math.max(1, Math.ceil(all.length / RANKING_PER_PAGE));
+const items = all.slice(0, RANKING_PER_PAGE);
+---
+<RankingPage items={items} page={1} pages={pages} start={0} />
