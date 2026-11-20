@@ -31,7 +31,7 @@ jobs:
       PUBLIC_GISCUS_CATEGORY_ID: ${{ vars.PUBLIC_GISCUS_CATEGORY_ID }}
       PUBLIC_GISCUS_MAPPING: ${{ vars.PUBLIC_GISCUS_MAPPING || 'pathname' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
